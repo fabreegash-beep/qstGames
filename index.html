@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Ask & Win | اسأل وتربح - Jeu multijoueur</title>
+    <title>❓ اسأل وتربح | العب مع أصدقائك</title>
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     
-    <!-- Audio Effects (Web Audio) -->
+    <!-- Audio Effects -->
     <script>
-        // Simple sound effects using Web Audio API
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeep(freq = 660, duration = 0.2, type = 'sine') {
             try {
@@ -26,7 +25,7 @@
                 gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
                 osc.start();
                 osc.stop(now + duration);
-            } catch(e) { console.log("Audio not allowed"); }
+            } catch(e) { }
         }
         function playWin() { playBeep(880, 0.4, 'sine'); setTimeout(() => playBeep(1320, 0.5, 'sine'), 200); }
         function playLose() { playBeep(440, 0.6, 'sawtooth'); }
@@ -40,71 +39,48 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Tajawal', system-ui, -apple-system, sans-serif;
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
             min-height: 100vh;
-            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
         
-        /* Main container */
         .game-container {
             max-width: 1200px;
             width: 100%;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
             border-radius: 48px;
             padding: 24px;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 25px 45px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
         }
         
         h1 {
             text-align: center;
             font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #FFD166, #FF6B6B, #4ECDC4);
+            background: linear-gradient(135deg, #FFD966, #FF8C42, #4ECDC4);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        /* Language Toggle */
-        .lang-toggle {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .lang-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
-            padding: 6px 18px;
-            border-radius: 40px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .lang-btn.active {
-            background: #FF6B6B;
-            box-shadow: 0 0 12px rgba(255,107,107,0.5);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         .room-section {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.12);
             border-radius: 32px;
             padding: 20px;
             margin-bottom: 20px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.2);
             backdrop-filter: blur(5px);
         }
         
@@ -112,18 +88,18 @@
             font-size: 1.9rem;
             font-family: monospace;
             letter-spacing: 6px;
-            background: linear-gradient(135deg, #FFD166, #FF6B6B);
-            color: #1a1a2e;
+            background: linear-gradient(135deg, #FFD966, #FF8C42);
+            color: #0f172a;
             padding: 12px 24px;
             border-radius: 60px;
             display: inline-block;
             margin: 10px 0;
             font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         
         button {
-            background: linear-gradient(135deg, #4ECDC4, #44a08d);
+            background: linear-gradient(135deg, #4ECDC4, #2c7a6e);
             color: white;
             border: none;
             padding: 10px 24px;
@@ -133,7 +109,8 @@
             cursor: pointer;
             margin: 5px;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-family: inherit;
         }
         
         button:hover:not(:disabled) {
@@ -163,20 +140,20 @@
         
         .player-card {
             flex: 1;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             padding: 24px;
             border-radius: 32px;
             text-align: center;
             transition: all 0.3s;
             border: 2px solid transparent;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
         
         .player-card.active {
             background: linear-gradient(145deg, #fff9e8, #fff3d1);
-            border-color: #FFD166;
+            border-color: #FFD966;
             transform: scale(1.02);
-            box-shadow: 0 12px 28px rgba(255,209,102,0.3);
+            box-shadow: 0 12px 28px rgba(255,209,102,0.4);
         }
         
         .player-card.winner {
@@ -187,14 +164,14 @@
         
         @keyframes winnerGlow {
             0%,100% { box-shadow: 0 0 0 0 #4ECDC4; }
-            50% { box-shadow: 0 0 0 12px rgba(78,205,196,0.4); }
+            50% { box-shadow: 0 0 0 12px rgba(78,205,196,0.5); }
         }
         
         .player-name {
             font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 12px;
-            color: #1a1a2e;
+            color: #1e293b;
         }
         
         .secret-item {
@@ -209,7 +186,7 @@
         }
         
         .chat-area {
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
             backdrop-filter: blur(8px);
             border-radius: 28px;
             padding: 20px;
@@ -236,20 +213,21 @@
         .message.my-message {
             background: linear-gradient(135deg, #4ECDC4, #3aa897);
             color: white;
-            margin-left: auto;
+            margin-right: auto;
             text-align: right;
         }
         
         .message.opponent-message {
-            background: rgba(255,255,255,0.9);
-            color: #1e2a3a;
-            margin-right: auto;
+            background: rgba(255,255,255,0.95);
+            color: #1e293b;
+            margin-left: auto;
+            text-align: left;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .message.system-message {
-            background: #FFD166;
-            color: #1a1a2e;
+            background: #FFD966;
+            color: #1e293b;
             text-align: center;
             margin: 12px auto;
             max-width: 90%;
@@ -268,9 +246,11 @@
             border: none;
             border-radius: 60px;
             font-size: 1rem;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             outline: none;
             transition: all 0.2s;
+            font-family: inherit;
+            text-align: right;
         }
         
         input:focus {
@@ -287,8 +267,8 @@
         }
         
         .current-question {
-            background: linear-gradient(135deg, #FFD166, #FFA559);
-            color: #1e2a3a;
+            background: linear-gradient(135deg, #FFD966, #FF8C42);
+            color: #1e293b;
             padding: 14px;
             border-radius: 40px;
             text-align: center;
@@ -305,6 +285,7 @@
             margin: 20px 0;
             max-height: 320px;
             overflow-y: auto;
+            padding: 10px;
         }
         
         .topic-btn {
@@ -318,14 +299,14 @@
         }
         
         .topic-btn:hover {
-            background: #FFD166;
-            color: #1a1a2e;
+            background: #FFD966;
+            color: #1e293b;
             transform: scale(1.02);
         }
         
         .turn-badge {
             display: inline-block;
-            background: #FF6B6B;
+            background: #FF8C42;
             color: white;
             padding: 6px 14px;
             border-radius: 30px;
@@ -340,7 +321,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             backdrop-filter: blur(8px);
             display: flex;
             justify-content: center;
@@ -379,32 +360,95 @@
             width: 48px;
             height: 48px;
             border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid #FFD166;
+            border-top: 4px solid #FFD966;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .host-only {
+            background: #FFD966;
+            color: #1e293b;
+            padding: 8px 16px;
+            border-radius: 40px;
+            margin-top: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .suggestions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .suggestion-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-btn:hover {
+            background: #FFD966;
+            color: #1e293b;
+        }
+        
+        .feedback {
+            background: rgba(78,205,196,0.3);
+            color: white;
+            padding: 12px;
+            border-radius: 40px;
+            text-align: center;
+            margin-top: 15px;
+        }
         
         @media (max-width: 700px) {
             .players { flex-direction: column; }
             .question-input, .guess-area { flex-direction: column; }
             .answer-buttons button { width: 100%; }
+            .message { max-width: 95%; }
         }
         
-        .lang-text-ar { font-family: 'Tajawal', sans-serif; }
+        .main-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        .main-btn {
+            padding: 14px 32px;
+            font-size: 1.1rem;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #FFD966;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="game-container" id="app">
-    <div class="lang-toggle">
-        <button class="lang-btn active" id="langFrBtn" onclick="setLanguage('fr')">🇫🇷 Français</button>
-        <button class="lang-btn" id="langArBtn" onclick="setLanguage('ar')">🇸🇦 العربية</button>
-    </div>
-    <h1 id="gameTitle">❓ Ask & Win | اسأل وتربح ❓</h1>
+    <h1>❓ اسأل وتربح | العب مع أصدقائك ❓</h1>
     <div id="mainContent"></div>
 </div>
 
@@ -422,140 +466,367 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     
-    // Multi-language dictionary
-    const lang = {
-        fr: {
-            create: "✨ Créer une salle ✨", join: "🔑 Rejoindre une salle 🔑", howto: "📖 Comment jouer :",
-            step1: "1️⃣ L'hôte choisit le thème", step2: "2️⃣ Chaque joueur reçoit un objet secret aléatoire",
-            step3: "3️⃣ L'hôte pose des questions (Oui/Non)", step4: "4️⃣ Après réponse, même joueur continue",
-            step5: "5️⃣ Devinez à tout moment → celui qui devine gagne !", step6: "6️⃣ 🎭 Le gagnant choisit un gage !",
-            waitingHost: "⏳ En attente du choix de l'hôte...", chooseTopic: "🎲 Choisissez le thème", hostOnly: "🔰 Seul l'hôte choisit",
-            yourTurn: "✨ Ton tour ✨", turnOf: "Au tour de", send: "📤 Envoyer", guess: "🎯 Deviner",
-            yes: "✅ Oui", no: "❌ Non", newRound: "🔄 Nouvelle manche", leave: "🚪 Quitter", copy: "📋 Copier",
-            win: "🎉 Tu as gagné !", lose: "😔 Tu as perdu !", secretWas: "Objet secret de l'adversaire :",
-            choosePunishment: "🎲 Choisis un gage pour le perdant", punishmentForLoser: "⚠️ Gage à exécuter",
-            execute: "✅ Exécuté", another: "🎲 Autre gage", punishmentList: ["🎭 Donne un surnom ridicule à ton adversaire", "🎬 Imite un personnage de dessin animé", "📸 Envoie une photo drôle", "🤫 Raconte un secret", "📝 Écris un mot à l'envers", "🎙️ Lis une phrase drôle à voix haute", "😂 Raconte une histoire embarrassante", "🍕 Décris un plat sans dire son nom", "🏷️ Invente un surnom étrange", "🎤 Chante une chanson de façon absurde", "🔄 Tourne sur toi-même 3 fois", "🎭 Mime un animal", "😝 Imite quelqu'un dans la salle", "⭐ Imite une célébrité", "🦩 Tiens-toi sur une jambe 10s"]
-        },
-        ar: {
-            create: "✨ إنشاء غرفة جديدة ✨", join: "🔑 انضمام إلى غرفة 🔑", howto: "📖 طريقة اللعب:",
-            step1: "1️⃣ المضيف يختار الموضوع", step2: "2️⃣ كل لاعب يحصل على عنصر سري عشوائي",
-            step3: "3️⃣ المضيف يبدأ بطرح الأسئلة (نعم/لا)", step4: "4️⃣ بعد الإجابة، يبقى الدور عند نفس اللاعب",
-            step5: "5️⃣ يمكن التخمين في أي وقت - من يخمن يفوز!", step6: "6️⃣ 🎭 الفائز يختار حكماً للخاسر!",
-            waitingHost: "⏳ في انتظار اختيار المضيف...", chooseTopic: "🎲 اختيار الموضوع", hostOnly: "🔰 فقط المضيف يختار",
-            yourTurn: "✨ دورك ✨", turnOf: "دور", send: "📤 إرسال", guess: "🎯 تخمين",
-            yes: "✅ نعم", no: "❌ لا", newRound: "🔄 جولة جديدة", leave: "🚪 مغادرة", copy: "📋 نسخ",
-            win: "🎉 فزت!", lose: "😔 خسرت!", secretWas: "العنصر السري للخصم:",
-            choosePunishment: "🎲 اختر حكماً للخاسر", punishmentForLoser: "⚠️ الحكم المطلوب تنفيذه",
-            execute: "✅ تم التنفيذ", another: "🎲 حكم آخر", punishmentList: ["🎭 أعطي صاحبك لقب مضحك", "🎬 خلي صاحبك يقلد شخصية كرتونية", "📸 اطلب من صاحبك يرسل صورة مضحكة", "🤫 خلي صاحبك يخبرك بسر", "📝 اجعل صاحبك يكتب كلمة بالعكس", "🎙️ خليه يقرأ جملة مضحكة", "😂 خليه يخبر بأغرب موقف", "🍕 قل له يصف أكلة بدون اسم", "🏷️ خليه يخترع لقب غريب", "🎤 خليه يغني بطريقة غريبة", "🔄 خليه يلف حول نفسه 3 مرات", "🎭 يقلد حيوان", "😝 يقلد أحد الموجودين", "⭐ يقلد شخصية مشهورة", "🦩 يقف على رجل واحدة 10 ثواني"]
-        }
-    };
+    // قائمة الأحكام
+    const PUNISHMENTS = [
+        "🎭 أعط صاحبك لقبًا مضحكًا لمدة دقيقة", "🎬 قلد شخصية كرتونية", "📸 أرسل صورة وجه مضحك للمجموعة",
+        "🤫 أخبر الجميع بسر صغير", "📝 اكتب كلمة صعبة بالعكس", "🎙️ اقرأ جملة مضحكة بصوت مسموع",
+        "😂 احكي أغرب موقف صار لك", "🍕 صف أكلة بدون ما تقول اسمها", "🏷️ اخترع لقب غريب لنفسك",
+        "🎤 غنِّ مقطع من أغنية بطريقة غريبة", "🔄 لف حول نفسك 3 مرات", "🎭 قلد حيوانًا بصوت",
+        "😝 قلد أحد اللاعبين", "⭐ قلد شخصية مشهورة", "🦩 قف على رجل واحدة 10 ثواني",
+        "🥤 قل أسوأ مشروب جربته", "🚗 قلد صوت سيارة", "📖 احكي موقف محرج", "🎬 مثل مشهد من فيلم"
+    ];
     
-    let currentLang = 'fr';
-    let currentRoomId = null, currentPlayer = null, roomListener = null;
-    
-    const TOPICS = {
-        stars_arab: { name_fr: "⭐ Stars Arabes", name_ar: "⭐ مشاهير عرب", items: ["Mohamed Salah", "Oum Kalthoum", "Abdel Halim Hafez", "Adel Imam", "Amr Diab"] },
-        stars_world: { name_fr: "🌟 Stars Mondiales", name_ar: "🌟 مشاهير عالم", items: ["Leonardo DiCaprio", "Zendaya", "The Rock", "Tom Cruise", "Beyoncé"] },
-        animals: { name_fr: "🦁 Animaux", name_ar: "🦁 حيوانات", items: ["Lion", "Tigre", "Éléphant", "Girafe", "Dauphin"] },
-        food: { name_fr: "🍕 Nourriture", name_ar: "🍕 أكلات", items: ["Pizza", "Burger", "Knafeh", "Shawarma", "Koshari"] },
-        countries: { name_fr: "🌍 Pays", name_ar: "🌍 دول", items: ["Égypte", "Arabie Saoudite", "Maroc", "France", "Canada"] },
-        movies: { name_fr: "🎬 Films", name_ar: "🎬 أفلام", items: ["Titanic", "Avatar", "Inception", "The Godfather", "Gladiator"] },
-        sports: { name_fr: "⚽ Sports", name_ar: "⚽ رياضات", items: ["Football", "Basketball", "Tennis", "Natation", "Boxe"] },
-        professions: { name_fr: "👨‍⚕️ Métiers", name_ar: "👨‍⚕️ مهن", items: ["Médecin", "Ingénieur", "Enseignant", "Avocat", "Pilote"] },
-        cartoons: { name_fr: "🎭 Dessins animés", name_ar: "🎭 كرتون", items: ["Mickey", "SpongeBob", "Batman", "Superman", "Tom"] },
-        fruits: { name_fr: "🍎 Fruits", name_ar: "🍎 فواكه", items: ["Pomme", "Banane", "Orange", "Fraise", "Mangue"] }
-    };
-    
-    function t(key, ...args) { let txt = lang[currentLang][key] || key; return txt; }
-    function getTopicDisplay(topicKey) { return currentLang === 'fr' ? TOPICS[topicKey].name_fr : TOPICS[topicKey].name_ar; }
-    function getRandomItem(topicKey) { return TOPICS[topicKey].items[Math.floor(Math.random() * TOPICS[topicKey].items.length)]; }
-    function getRandomPunishment() { const list = lang[currentLang].punishmentList; return list[Math.floor(Math.random() * list.length)]; }
-    
-    function setLanguage(lang) {
-        currentLang = lang;
-        document.getElementById('langFrBtn').classList.toggle('active', lang === 'fr');
-        document.getElementById('langArBtn').classList.toggle('active', lang === 'ar');
-        document.getElementById('gameTitle').innerHTML = currentLang === 'fr' ? "❓ Ask & Win | Demande et Gagne ❓" : "❓ اسأل وتربح | العب مع أصدقائك ❓";
-        if (!currentRoomId) showMainMenu(); else if (roomListener) database.ref('rooms/' + currentRoomId).once('value', snap => renderGame(snap.val()));
-    }
-    
-    function showMessage(msg, isError = false) { playClick(); const div = document.createElement('div'); div.textContent = msg; div.style.cssText = `position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: ${isError ? '#e74c3c' : '#2ecc71'}; color: white; padding: 12px 24px; border-radius: 60px; z-index: 9999; font-weight: bold; backdrop-filter: blur(8px);`; document.body.appendChild(div); setTimeout(() => div.remove(), 2800); }
+    function getRandomPunishment() { return PUNISHMENTS[Math.floor(Math.random() * PUNISHMENTS.length)]; }
     
     function showPunishment(punishment, isWinner) {
         playWin();
-        const modal = document.createElement('div'); modal.className = 'punishment-modal';
-        modal.innerHTML = `<div class="punishment-content"><div style="font-size:3rem;">${isWinner ? '🏆🎭' : '😭⚠️'}</div><h3>${isWinner ? t('choosePunishment') : t('punishmentForLoser')}</h3><div class="punishment-text">${punishment}</div><button onclick="this.closest('.punishment-modal').remove(); playClick();" class="btn-green">${t('execute')}</button>${isWinner ? `<button onclick="changePunishmentModal(this)" class="btn-orange">${t('another')}</button>` : ''}</div>`;
+        const modal = document.createElement('div');
+        modal.className = 'punishment-modal';
+        modal.innerHTML = `
+            <div class="punishment-content">
+                <div style="font-size:3rem;">${isWinner ? '🏆🎲' : '😭⚠️'}</div>
+                <h3>${isWinner ? '🎲 اختر حكمًا للخاسر 🎲' : '⚠️ الحكم المطلوب تنفيذه ⚠️'}</h3>
+                <div class="punishment-text">${punishment}</div>
+                <button onclick="this.closest('.punishment-modal').remove(); playClick()" class="btn-green">${isWinner ? '📋 نسخ الحكم' : '✅ تم التنفيذ'}</button>
+                ${isWinner ? `<button onclick="changePunishmentModal(this)" class="btn-orange">🎲 حكم آخر</button>` : ''}
+            </div>
+        `;
         document.body.appendChild(modal);
     }
-    window.changePunishmentModal = (btn) => { const modal = btn.closest('.punishment-modal'); modal.querySelector('.punishment-text').innerHTML = getRandomPunishment(); playClick(); };
+    
+    window.changePunishmentModal = (btn) => {
+        const modal = btn.closest('.punishment-modal');
+        modal.querySelector('.punishment-text').innerHTML = getRandomPunishment();
+        playClick();
+    };
+    
+    // المواضيع (15 موضوع)
+    const TOPICS = {
+        مشاهير_عرب: { name: "⭐ مشاهير عرب", items: ["محمد صلاح", "أم كلثوم", "عبد الحليم حافظ", "عادل إمام", "تامر حسني", "نانسي عجرم", "أحمد حلمي", "عمرو دياب"] },
+        مشاهير_عالم: { name: "🌟 مشاهير عالم", items: ["ليونيل ميسي", "كريستيانو رونالدو", "توم كروز", "ليوناردو دي كابريو", "أنجلينا جولي", "ذا روك", "ويل سميث", "كيانو ريفز"] },
+        حيوانات: { name: "🦁 حيوانات", items: ["أسد", "نمر", "فيل", "زرافة", "قرد", "دلفين", "حوت", "تمساح"] },
+        أكلات: { name: "🍕 أكلات", items: ["بيتزا", "برجر", "مكرونة", "كنافة", "شاورما", "كشري", "فلافل", "مندي"] },
+        دول: { name: "🌍 دول", items: ["مصر", "السعودية", "الإمارات", "قطر", "الكويت", "الأردن", "لبنان", "المغرب"] },
+        أفلام: { name: "🎬 أفلام", items: ["المومياء", "الجزيرة", "الفيل الأزرق", "ولاد رزق", "تيتانيك", "أفاتار", "العراب", "فورست غامب"] },
+        رياضات: { name: "⚽ رياضات", items: ["كرة قدم", "كرة سلة", "كرة طائرة", "تنس", "سباحة", "جمباز", "ملاكمة", "جودو"] },
+        مهن: { name: "👨‍⚕️ مهن", items: ["طبيب", "مهندس", "معلم", "محامي", "طيار", "شرطي", "طباخ", "نجار"] },
+        شخصيات_كرتونية: { name: "🎭 كرتون", items: ["ميكي ماوس", "بندق", "سبونج بوب", "باتريك", "سوبر مان", "بات مان", "سبايدر مان", "توم"] },
+        فواكه: { name: "🍎 فواكه", items: ["تفاح", "موز", "برتقال", "فراولة", "عنب", "مانجو", "أناناس", "كيوي"] },
+        خضروات: { name: "🥕 خضروات", items: ["طماطم", "خيار", "جزر", "بطاطس", "بصل", "ثوم", "فلفل", "باذنجان"] },
+        مشروبات: { name: "🥤 مشروبات", items: ["قهوة", "شاي", "عصير برتقال", "كولا", "ماء", "حليب", "شوكولاتة ساخنة", "نسكافيه"] },
+        تكنولوجيا: { name: "💻 تكنولوجيا", items: ["هاتف", "كمبيوتر", "لابتوب", "تابلت", "ساعة ذكية", "سماعات", "كاميرا", "طابعة"] },
+        طبيعة: { name: "🏔️ طبيعة", items: ["جبل", "بحر", "نهر", "وادي", "صحراء", "غابة", "شلال", "كهف"] },
+        ألوان: { name: "🎨 ألوان", items: ["أحمر", "أزرق", "أخضر", "أصفر", "أسود", "أبيض", "برتقالي", "بنفسجي"] }
+    };
+    
+    let currentRoomId = null;
+    let currentPlayer = null;
+    let roomListener = null;
+    
+    function getRandomItemFromTopic(topicKey) {
+        const items = TOPICS[topicKey].items;
+        return items[Math.floor(Math.random() * items.length)];
+    }
+    
+    function showMessage(msg, isError = false) {
+        playClick();
+        const div = document.createElement('div');
+        div.textContent = msg;
+        div.style.cssText = `position: fixed; bottom: 20px; right: 50%; transform: translateX(50%); background: ${isError ? '#e74c3c' : '#27ae60'}; color: white; padding: 12px 24px; border-radius: 60px; z-index: 9999; font-weight: bold; backdrop-filter: blur(8px); text-align: center;`;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2800);
+    }
     
     function createRoom() {
         playClick();
         const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        currentRoomId = roomId; currentPlayer = 'host';
-        const roomData = { host: { joined: true, secretItem: null, hasItem: false }, guest: { joined: false, secretItem: null, hasItem: false }, topic: null, topicChosen: false, turn: 'host', phase: 'topic_selection', gameEnded: false, winner: null, messages: [], waitingForAnswer: false, currentQuestion: null };
+        currentRoomId = roomId;
+        currentPlayer = 'host';
+        
+        const roomData = {
+            host: { joined: true, secretItem: null, hasItem: false },
+            guest: { joined: false, secretItem: null, hasItem: false },
+            topic: null,
+            topicChosen: false,
+            turn: 'host',
+            phase: 'topic_selection',
+            gameEnded: false,
+            winner: null,
+            messages: [],
+            waitingForAnswer: false,
+            currentQuestion: null
+        };
+        
         database.ref('rooms/' + roomId).set(roomData).then(() => { listenToRoom(roomId); showWaitingRoom(); });
     }
     
     function joinRoom() {
         playClick();
-        const roomId = prompt(currentLang === 'fr' ? "🔑 Entrez le code de la salle:" : "🔑 أدخل رمز الغرفة:", "").toUpperCase();
+        const roomId = prompt("🔑 أدخل رمز الغرفة:", "").toUpperCase();
         if (!roomId) return;
-        database.ref('rooms/' + roomId).once('value').then(snap => {
-            const room = snap.val();
-            if (!room) { showMessage(currentLang === 'fr' ? "Salle introuvable!" : "الغرفة غير موجودة!", true); return; }
-            if (room.guest.joined) { showMessage(currentLang === 'fr' ? "Salle pleine!" : "الغرفة ممتلئة!", true); return; }
-            currentRoomId = roomId; currentPlayer = 'guest';
-            database.ref('rooms/' + roomId).update({ 'guest/joined': true }).then(() => { listenToRoom(roomId); showMessage(currentLang === 'fr' ? "✅ Rejoint!" : "✅ تم الانضمام!"); });
+        database.ref('rooms/' + roomId).once('value').then(snapshot => {
+            const room = snapshot.val();
+            if (!room) { showMessage("❌ الغرفة غير موجودة!", true); return; }
+            if (room.guest.joined) { showMessage("❌ الغرفة ممتلئة!", true); return; }
+            currentRoomId = roomId;
+            currentPlayer = 'guest';
+            database.ref('rooms/' + roomId).update({ 'guest/joined': true }).then(() => { listenToRoom(roomId); showMessage("✅ تم الانضمام بنجاح!"); });
         });
     }
     
-    function listenToRoom(roomId) { if (roomListener) roomListener.off(); roomListener = database.ref('rooms/' + roomId); roomListener.on('value', (snap) => { const room = snap.val(); if (!room) { showMainMenu(); return; } renderGame(room); }); }
+    function listenToRoom(roomId) {
+        if (roomListener) roomListener.off();
+        roomListener = database.ref('rooms/' + roomId);
+        roomListener.on('value', (snapshot) => {
+            const room = snapshot.val();
+            if (!room) { showMainMenu(); return; }
+            renderGame(room);
+        });
+    }
     
-    function showWaitingRoom() { document.getElementById('mainContent').innerHTML = `<div class="room-section"><div class="room-code">${currentRoomId}</div><button onclick="copyCode();playClick()" class="btn-green">📋 ${t('copy')}</button><div class="spinner"></div><button onclick="backToMenu()" class="btn-red">🚪 ${t('leave')}</button></div>`; }
-    function copyCode() { navigator.clipboard.writeText(currentRoomId); showMessage(currentLang === 'fr' ? "✅ Code copié!" : "✅ تم نسخ الرمز!"); }
-    function backToMenu() { if (roomListener) roomListener.off(); if (currentRoomId) database.ref('rooms/' + currentRoomId).remove(); currentRoomId = null; currentPlayer = null; showMainMenu(); }
+    function showWaitingRoom() {
+        document.getElementById('mainContent').innerHTML = `
+            <div class="room-section">
+                <div class="room-code">${currentRoomId}</div>
+                <button onclick="copyCode();playClick()" class="btn-green">📋 نسخ الرمز</button>
+                <div class="spinner"></div>
+                <p style="color:white; margin:15px 0;">⏳ في انتظار انضمام صديق...</p>
+                <button onclick="backToMenu()" class="btn-red">🚪 إلغاء</button>
+            </div>
+        `;
+    }
+    
+    function copyCode() { navigator.clipboard.writeText(currentRoomId); showMessage("✅ تم نسخ الرمز: " + currentRoomId); }
+    
+    function backToMenu() {
+        if (roomListener) roomListener.off();
+        if (currentRoomId) database.ref('rooms/' + currentRoomId).remove();
+        currentRoomId = null;
+        currentPlayer = null;
+        showMainMenu();
+    }
     
     function selectTopic(topicKey) {
         playClick();
         database.ref('rooms/' + currentRoomId).once('value', snap => {
-            const room = snap.val(); if (!room || room.topicChosen) return;
-            const hostItem = getRandomItem(topicKey), guestItem = getRandomItem(topicKey);
-            database.ref('rooms/' + currentRoomId).update({ topic: topicKey, topicChosen: true, 'host/secretItem': hostItem, 'host/hasItem': true, 'guest/secretItem': guestItem, 'guest/hasItem': true, phase: 'playing', turn: 'host', messages: [{ from: 'system', text: currentLang === 'fr' ? `🎯 Thème: ${getTopicDisplay(topicKey)}` : `🎯 الموضوع: ${getTopicDisplay(topicKey)}`, timestamp: Date.now() }] });
+            const room = snap.val();
+            if (!room || room.topicChosen) return;
+            const hostItem = getRandomItemFromTopic(topicKey);
+            const guestItem = getRandomItemFromTopic(topicKey);
+            database.ref('rooms/' + currentRoomId).update({
+                topic: topicKey,
+                topicChosen: true,
+                'host/secretItem': hostItem,
+                'host/hasItem': true,
+                'guest/secretItem': guestItem,
+                'guest/hasItem': true,
+                phase: 'playing',
+                turn: 'host',
+                messages: [{ from: 'system', text: `🎯 الموضوع: ${TOPICS[topicKey].name} 🎯`, timestamp: Date.now() }]
+            });
         });
     }
     
-    function sendQuestion(q) { if (!q) return; playMessage(); database.ref('rooms/' + currentRoomId).once('value', snap => { const room = snap.val(); if (!room || room.gameEnded) return; const isHost = currentPlayer === 'host'; const myTurn = (isHost && room.turn === 'host') || (!isHost && room.turn === 'guest'); if (!myTurn || room.waitingForAnswer) { showMessage(currentLang === 'fr' ? "Pas ton tour!" : "ليس دورك!", true); return; } database.ref('rooms/' + currentRoomId).update({ messages: [...(room.messages || []), { from: currentPlayer, text: `❓ ${q}`, timestamp: Date.now() }], waitingForAnswer: true, currentQuestion: q, turn: isHost ? 'guest' : 'host' }); }); }
-    function sendAnswer(answer) { playClick(); database.ref('rooms/' + currentRoomId).once('value', snap => { const room = snap.val(); if (!room || room.gameEnded) return; const isHost = currentPlayer === 'host'; const myTurn = (isHost && room.turn === 'host') || (!isHost && room.turn === 'guest'); if (!myTurn || !room.waitingForAnswer) { showMessage(currentLang === 'fr' ? "Pas ton tour pour répondre!" : "ليس دورك للإجابة!", true); return; } const ansText = answer === 'yes' ? (currentLang === 'fr' ? '✅ Oui' : '✅ نعم') : (currentLang === 'fr' ? '❌ Non' : '❌ لا'); database.ref('rooms/' + currentRoomId).update({ messages: [...(room.messages || []), { from: currentPlayer, text: ansText, timestamp: Date.now() }], waitingForAnswer: false, currentQuestion: null, turn: currentPlayer }); }); }
-    function makeGuess(guess) { if (!guess) return; playClick(); database.ref('rooms/' + currentRoomId).once('value', snap => { const room = snap.val(); if (!room || room.gameEnded) return; const isHost = currentPlayer === 'host'; const opponentSecret = isHost ? room.guest.secretItem : room.host.secretItem; if (guess === opponentSecret) { playWin(); const p = getRandomPunishment(); database.ref('rooms/' + currentRoomId).update({ winner: currentPlayer, gameEnded: true, phase: 'finished', messages: [...(room.messages || []), { from: 'system', text: `🎉🏆 ${currentPlayer === 'host' ? (currentLang === 'fr' ? "Hôte" : "المضيف") : (currentLang === 'fr' ? "Invité" : "الضيف")} ${currentLang === 'fr' ? 'a gagné!' : 'فاز!'} (${opponentSecret}) 🏆🎉`, timestamp: Date.now() }] }); showMessage(`${t('win')} ${opponentSecret}`); } else { playLose(); showMessage(`${currentLang === 'fr' ? '❌ Faux!' : '❌ خطأ!'} "${guess}"`, true); database.ref('rooms/' + currentRoomId).update({ messages: [...(room.messages || []), { from: 'system', text: `❌ ${currentLang === 'fr' ? 'Mauvaise devinette:' : 'تخمين خاطئ:'} "${guess}"`, timestamp: Date.now() }], turn: isHost ? 'guest' : 'host', waitingForAnswer: false, currentQuestion: null }); } }); }
-    function newRound() { playClick(); database.ref('rooms/' + currentRoomId).update({ 'host/secretItem': null, 'guest/secretItem': null, 'host/hasItem': false, 'guest/hasItem': false, topic: null, topicChosen: false, messages: [], waitingForAnswer: false, currentQuestion: null, turn: 'host', phase: 'topic_selection', gameEnded: false, winner: null }); }
+    function sendQuestion(q) {
+        if (!q) return;
+        playMessage();
+        database.ref('rooms/' + currentRoomId).once('value', snap => {
+            const room = snap.val();
+            if (!room || room.gameEnded) return;
+            const isHost = currentPlayer === 'host';
+            const myTurn = (isHost && room.turn === 'host') || (!isHost && room.turn === 'guest');
+            if (!myTurn || room.waitingForAnswer) { showMessage("❌ ليس دورك!", true); return; }
+            database.ref('rooms/' + currentRoomId).update({
+                messages: [...(room.messages || []), { from: currentPlayer, text: `❓ ${q}`, timestamp: Date.now() }],
+                waitingForAnswer: true,
+                currentQuestion: q,
+                turn: isHost ? 'guest' : 'host'
+            });
+        });
+    }
+    
+    function sendAnswer(answer) {
+        playClick();
+        database.ref('rooms/' + currentRoomId).once('value', snap => {
+            const room = snap.val();
+            if (!room || room.gameEnded) return;
+            const isHost = currentPlayer === 'host';
+            const myTurn = (isHost && room.turn === 'host') || (!isHost && room.turn === 'guest');
+            if (!myTurn || !room.waitingForAnswer) { showMessage("❌ ليس دورك للإجابة!", true); return; }
+            const answerText = answer === 'yes' ? '✅ نعم' : '❌ لا';
+            database.ref('rooms/' + currentRoomId).update({
+                messages: [...(room.messages || []), { from: currentPlayer, text: answerText, timestamp: Date.now() }],
+                waitingForAnswer: false,
+                currentQuestion: null,
+                turn: currentPlayer
+            });
+        });
+    }
+    
+    function makeGuess(guess) {
+        if (!guess) return;
+        playClick();
+        database.ref('rooms/' + currentRoomId).once('value', snap => {
+            const room = snap.val();
+            if (!room || room.gameEnded) return;
+            const isHost = currentPlayer === 'host';
+            const opponentSecret = isHost ? room.guest.secretItem : room.host.secretItem;
+            if (guess === opponentSecret) {
+                playWin();
+                const p = getRandomPunishment();
+                database.ref('rooms/' + currentRoomId).update({
+                    winner: currentPlayer,
+                    gameEnded: true,
+                    phase: 'finished',
+                    messages: [...(room.messages || []), { from: 'system', text: `🎉🏆 ${isHost ? 'المضيف' : 'الضيف'} فاز! العنصر السري: ${opponentSecret} 🏆🎉`, timestamp: Date.now() }]
+                });
+                showMessage(`🎉 فزت! العنصر السري كان: ${opponentSecret}`);
+            } else {
+                playLose();
+                showMessage(`❌ خطأ! "${guess}" ليس صحيحاً.`, true);
+                database.ref('rooms/' + currentRoomId).update({
+                    messages: [...(room.messages || []), { from: 'system', text: `❌ تخمين خاطئ: "${guess}"`, timestamp: Date.now() }],
+                    turn: isHost ? 'guest' : 'host',
+                    waitingForAnswer: false,
+                    currentQuestion: null
+                });
+            }
+        });
+    }
+    
+    function newRound() {
+        playClick();
+        database.ref('rooms/' + currentRoomId).update({
+            'host/secretItem': null, 'guest/secretItem': null,
+            'host/hasItem': false, 'guest/hasItem': false,
+            topic: null, topicChosen: false,
+            messages: [], waitingForAnswer: false, currentQuestion: null,
+            turn: 'host', phase: 'topic_selection', gameEnded: false, winner: null
+        });
+    }
     
     function renderGame(room) {
-        const isHost = currentPlayer === 'host'; const mySecret = isHost ? room.host.secretItem : room.guest.secretItem; const myTurn = (isHost && room.turn === 'host') || (!isHost && room.turn === 'guest'); const isAnswerTurn = myTurn && room.waitingForAnswer; const isQuestionTurn = myTurn && !room.waitingForAnswer && !room.gameEnded;
-        let html = `<div class="room-section"><div>🏠 ${currentLang === 'fr' ? 'Code:' : 'رمز:'} <strong class="room-code">${currentRoomId}</strong></div><button onclick="copyCode();playClick()" class="btn-green">📋 ${t('copy')}</button><button onclick="backToMenu()" class="btn-red">🚪 ${t('leave')}</button></div><div class="players"><div class="player-card ${room.turn === 'host' && !room.gameEnded ? 'active' : ''} ${room.winner === 'host' ? 'winner' : ''}"><div class="player-name">${isHost ? `👤 ${currentLang === 'fr' ? 'Toi (Hôte)' : 'أنت (المضيف)'}` : `👥 ${currentLang === 'fr' ? 'Hôte' : 'المضيف'}`}</div>${mySecret && room.phase === 'playing' && !room.gameEnded && isHost ? `<div class="secret-item">🔒 ${currentLang === 'fr' ? 'Ton objet:' : 'عنصرك:'} ${mySecret}</div>` : ''}${room.turn === 'host' && !room.gameEnded ? `<div class="turn-badge">✨ ${t('yourTurn')} ✨</div>` : ''}</div><div class="player-card ${room.turn === 'guest' && !room.gameEnded ? 'active' : ''} ${room.winner === 'guest' ? 'winner' : ''}"><div class="player-name">${!isHost ? `👤 ${currentLang === 'fr' ? 'Toi (Invité)' : 'أنت (الضيف)'}` : `👥 ${currentLang === 'fr' ? 'Invité' : 'الضيف'}`}</div>${!isHost && mySecret && room.phase === 'playing' && !room.gameEnded ? `<div class="secret-item">🔒 ${currentLang === 'fr' ? 'Ton objet:' : 'عنصرك:'} ${mySecret}</div>` : ''}${room.turn === 'guest' && !room.gameEnded ? `<div class="turn-badge">✨ ${t('yourTurn')} ✨</div>` : ''}</div></div>`;
+        const isHost = currentPlayer === 'host';
+        const mySecret = isHost ? room.host.secretItem : room.guest.secretItem;
+        const myTurn = (isHost && room.turn === 'host') || (!isHost && room.turn === 'guest');
+        const isAnswerTurn = myTurn && room.waitingForAnswer;
+        const isQuestionTurn = myTurn && !room.waitingForAnswer && !room.gameEnded;
+        
+        let html = `
+            <div class="room-section">
+                <div>🏠 رمز الغرفة: <strong class="room-code">${currentRoomId}</strong></div>
+                <button onclick="copyCode();playClick()" class="btn-green">📋 نسخ الرمز</button>
+                <button onclick="backToMenu()" class="btn-red">🚪 مغادرة</button>
+            </div>
+            <div class="players">
+                <div class="player-card ${room.turn === 'host' && !room.gameEnded ? 'active' : ''} ${room.winner === 'host' ? 'winner' : ''}">
+                    <div class="player-name">${isHost ? '👤 أنت (المضيف)' : '👥 المضيف'}</div>
+                    ${mySecret && room.phase === 'playing' && !room.gameEnded && isHost ? `<div class="secret-item">🔒 عنصرك السري: ${mySecret}</div>` : ''}
+                    ${room.turn === 'host' && !room.gameEnded ? '<div class="turn-badge">✨ دورك الآن ✨</div>' : ''}
+                </div>
+                <div class="player-card ${room.turn === 'guest' && !room.gameEnded ? 'active' : ''} ${room.winner === 'guest' ? 'winner' : ''}">
+                    <div class="player-name">${!isHost ? '👤 أنت (الضيف)' : '👥 الضيف'}</div>
+                    ${!isHost && mySecret && room.phase === 'playing' && !room.gameEnded ? `<div class="secret-item">🔒 عنصرك السري: ${mySecret}</div>` : ''}
+                    ${room.turn === 'guest' && !room.gameEnded ? '<div class="turn-badge">✨ دورك الآن ✨</div>' : ''}
+                </div>
+            </div>
+        `;
+        
         if (room.phase === 'topic_selection' || !room.topicChosen) {
-            const topicOptions = Object.keys(TOPICS).map(key => `<button class="topic-btn" onclick="selectTopic('${key}');playClick()">${getTopicDisplay(key)}</button>`).join('');
-            html += `<div class="waiting"><h3>${t('chooseTopic')}</h3>${isHost ? `<div class="topic-selector">${topicOptions}</div><div class="host-only" style="background:#FFD166; padding:8px; border-radius:40px;">🔰 ${t('hostOnly')}</div>` : `<div class="feedback">${t('waitingHost')}</div><div class="spinner"></div>`}</div>`;
+            const topicOptions = Object.keys(TOPICS).map(key => `<button class="topic-btn" onclick="selectTopic('${key}');playClick()">${TOPICS[key].name}</button>`).join('');
+            html += `
+                <div class="waiting">
+                    <h3>🎲 اختر الموضوع 🎲</h3>
+                    ${isHost ? `<div class="topic-selector">${topicOptions}</div><div class="host-only">🔰 فقط المضيف يختار الموضوع</div>` : `<div class="feedback">⏳ في انتظار اختيار المضيف للموضوع...</div><div class="spinner"></div>`}
+                </div>
+            `;
         } else if (room.phase === 'playing' && !room.gameEnded) {
-            const messagesHtml = (room.messages || []).map(msg => `<div class="message ${msg.from === currentPlayer ? 'my-message' : (msg.from === 'system' ? 'system-message' : 'opponent-message')}">${msg.from === 'system' ? '📢 ' : (msg.from === 'host' ? (currentLang === 'fr' ? '👤 Hôte: ' : '👤 المضيف: ') : (currentLang === 'fr' ? '👥 Invité: ' : '👥 الضيف: '))}${msg.text}</div>`).join('');
-            html += `<div style="background:linear-gradient(135deg,#4ECDC4,#2c7a6e); color:white; padding:12px; border-radius:32px; text-align:center;">🎯 ${currentLang === 'fr' ? 'Thème:' : 'الموضوع:'} ${getTopicDisplay(room.topic)}</div><div class="chat-area" id="chatArea">${messagesHtml || '<div style="text-align:center;">✨ ' + (currentLang === 'fr' ? 'Commencez!' : 'ابدا!') + ' ✨</div>'}</div>`;
-            if (isQuestionTurn) html += `<div class="question-input"><input type="text" id="questionInput" placeholder="${currentLang === 'fr' ? 'Pose une question (Oui/Non)...' : 'اسأل سؤالاً (نعم/لا)...'}" /><button onclick="sendQuestionFromGame()" class="btn-cyan">📤 ${t('send')}</button></div><div class="suggestions" style="display:flex; gap:8px; flex-wrap:wrap;">${['Est-ce un être vivant?', 'Est-ce un objet?', 'Est-ce célèbre?', 'Est-ce que ça se mange?'].map(s => `<button class="suggestion-btn" onclick="document.getElementById('questionInput').value='${s}'" style="background:rgba(255,255,255,0.2); border-radius:40px; padding:6px 14px;">${s}</button>`).join('')}</div>`;
-            else if (isAnswerTurn) html += `<div class="current-question">❓ ${currentLang === 'fr' ? 'Question:' : 'سؤال:'} ${room.currentQuestion}</div><div class="answer-buttons"><button onclick="sendAnswerFromGame('yes')" class="btn-yes">${t('yes')}</button><button onclick="sendAnswerFromGame('no')" class="btn-no">${t('no')}</button></div>`;
-            else html += `<div class="feedback" style="background:rgba(0,0,0,0.5); border-radius:40px; padding:14px; text-align:center;">⏳ ${currentLang === 'fr' ? 'En attente du tour de' : 'في انتظار دور'} ${room.turn === 'host' ? (currentLang === 'fr' ? "l'hôte..." : "المضيف...") : (currentLang === 'fr' ? "l'invité..." : "الضيف...")}</div>`;
-            html += `<div class="guess-area"><input type="text" id="guessInput" placeholder="🔍 ${t('guess')}..." /><button onclick="makeGuessFromGame()" class="btn-orange">🎯 ${t('guess')}</button></div>`;
+            const messagesHtml = (room.messages || []).map(msg => {
+                let sender = '';
+                if (msg.from === 'system') sender = '📢 ';
+                else if (msg.from === 'host') sender = '👤 المضيف: ';
+                else sender = '👥 الضيف: ';
+                return `<div class="message ${msg.from === currentPlayer ? 'my-message' : (msg.from === 'system' ? 'system-message' : 'opponent-message')}">${sender}${msg.text}</div>`;
+            }).join('');
+            
+            html += `
+                <div style="background:linear-gradient(135deg,#4ECDC4,#2c7a6e); color:white; padding:12px; border-radius:32px; text-align:center;">🎯 الموضوع: ${TOPICS[room.topic].name}</div>
+                <div class="chat-area" id="chatArea">${messagesHtml || '<div style="text-align:center;">✨ ابدأ الأسئلة! ✨</div>'}</div>
+            `;
+            
+            if (isQuestionTurn) {
+                const suggestions = ["هل هو إنسان؟", "هل هو حيوان؟", "هل هو طعام؟", "هل هو مشهور؟", "هل هو لون؟", "هل يمكن أكله؟"];
+                html += `
+                    <div class="question-input">
+                        <input type="text" id="questionInput" placeholder="اسأل سؤالاً (نعم/لا)..." />
+                        <button onclick="sendQuestionFromGame()" class="btn-cyan">📤 إرسال</button>
+                    </div>
+                    <div class="suggestions">
+                        ${suggestions.map(s => `<button class="suggestion-btn" onclick="document.getElementById('questionInput').value='${s}'">${s}</button>`).join('')}
+                    </div>
+                `;
+            } else if (isAnswerTurn) {
+                html += `
+                    <div class="current-question">❓ السؤال: ${room.currentQuestion}</div>
+                    <div class="answer-buttons">
+                        <button onclick="sendAnswerFromGame('yes')" class="btn-yes">✅ نعم</button>
+                        <button onclick="sendAnswerFromGame('no')" class="btn-no">❌ لا</button>
+                    </div>
+                `;
+            } else {
+                html += `<div class="feedback">⏳ في انتظار دور ${room.turn === 'host' ? 'المضيف' : 'الضيف'}...</div>`;
+            }
+            
+            html += `
+                <div class="guess-area">
+                    <input type="text" id="guessInput" placeholder="🔍 تخمين العنصر السري..." />
+                    <button onclick="makeGuessFromGame()" class="btn-orange">🎯 خمن!</button>
+                </div>
+            `;
+            
             setTimeout(() => { const chat = document.getElementById('chatArea'); if (chat) chat.scrollTop = chat.scrollHeight; }, 100);
         } else if (room.phase === 'finished') {
-            const p = getRandomPunishment(); const opponentSecret = isHost ? room.guest.secretItem : room.host.secretItem;
-            html += `<div class="waiting"><h2>${room.winner === currentPlayer ? t('win') : t('lose')}</h2><div class="feedback">${t('secretWas')} ${opponentSecret}</div><button onclick="showPunishment('${p}', ${room.winner === currentPlayer})" class="btn-purple">${room.winner === currentPlayer ? t('choosePunishment') : t('punishmentForLoser')}</button><button onclick="newRound()" class="btn-orange">${t('newRound')}</button></div>`;
+            const p = getRandomPunishment();
+            const opponentSecret = isHost ? room.guest.secretItem : room.host.secretItem;
+            html += `
+                <div class="waiting">
+                    <h2>${room.winner === currentPlayer ? '🎉 فزت! مبروك 🎉' : '😔 خسرت! 😔'}</h2>
+                    <div class="feedback">🔍 العنصر السري للخصم: ${opponentSecret}</div>
+                    <button onclick="showPunishment('${p}', ${room.winner === currentPlayer})" class="btn-purple">${room.winner === currentPlayer ? '🎲 اختر حكماً للخاسر' : '😭 عرض الحكم'}</button>
+                    <button onclick="newRound()" class="btn-orange">🔄 جولة جديدة</button>
+                </div>
+            `;
         }
+        
         document.getElementById('mainContent').innerHTML = html;
     }
     
-    window.selectTopic = selectTopic; window.sendQuestionFromGame = () => { const q = document.getElementById('questionInput')?.value; if (q) { sendQuestion(q); document.getElementById('questionInput').value = ''; } }; window.sendAnswerFromGame = (a) => sendAnswer(a); window.makeGuessFromGame = () => { const g = document.getElementById('guessInput')?.value; if (g) { makeGuess(g); document.getElementById('guessInput').value = ''; } }; window.newRound = newRound; window.setLanguage = setLanguage;
+    // ربط الدوال العامة
+    window.selectTopic = selectTopic;
+    window.sendQuestionFromGame = () => { const q = document.getElementById('questionInput')?.value; if (q) { sendQuestion(q); document.getElementById('questionInput').value = ''; } };
+    window.sendAnswerFromGame = (a) => sendAnswer(a);
+    window.makeGuessFromGame = () => { const g = document.getElementById('guessInput')?.value; if (g) { makeGuess(g); document.getElementById('guessInput').value = ''; } };
+    window.newRound = newRound;
+    window.playClick = playClick;
     
     function showMainMenu() {
-        document.getElementById('mainContent').innerHTML = `<div class="main-buttons" style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;"><button onclick="createRoom()" style="background:linear-gradient(135deg,#FF6B6B,#c0392b);">✨ ${t('create')} ✨</button><button onclick="joinRoom()" style="background:linear-gradient(135deg,#4ECDC4,#2c7a6e);">🔑 ${t('join')} 🔑</button></div><div class="room-section"><h3>${t('howto')}</h3><p>${t('step1')}</p><p>${t('step2')}</p><p>${t('step3')}</p><p>${t('step4')}</p><p>${t('step5')}</p><p>${t('step6')}</p></div>`;
+        document.getElementById('mainContent').innerHTML = `
+            <div class="main-buttons">
+                <button onclick="createRoom()" class="main-btn" style="background:linear-gradient(135deg,#FF8C42,#e67e22);">✨ إنشاء غرفة جديدة ✨</button>
+                <button onclick="joinRoom()" class="main-btn" style="background:linear-gradient(135deg,#4ECDC4,#2c7a6e);">🔑 انضمام إلى غرفة 🔑</button>
+            </div>
+            <div class="room-section">
+                <h3 style="color:#FFD966;">📖 طريقة اللعب:</h3>
+                <p style="color:white; margin:10px 0;">1️⃣ <strong>المضيف</strong> يختار الموضوع من <strong>15 موضوعاً</strong></p>
+                <p style="color:white; margin:10px 0;">2️⃣ كل لاعب يحصل على <strong>عنصر سري عشوائي</strong></p>
+                <p style="color:white; margin:10px 0;">3️⃣ <strong style="color:#FFD966;">المضيف يبدأ</strong> بطرح الأسئلة (نعم/لا)</p>
+                <p style="color:white; margin:10px 0;">4️⃣ بعد الإجابة، <strong>يبقى الدور عند نفس اللاعب</strong> لطرح سؤال جديد</p>
+                <p style="color:white; margin:10px 0;">5️⃣ يمكن التخمين في أي وقت - من يخمن العنصر الصحيح <strong>يفوز!</strong></p>
+                <p style="color:white; margin:10px 0;">6️⃣ <strong style="color:#FF8C42;">🎭 عند الفوز، اختر حكماً مضحكاً للخاسر!</strong></p>
+            </div>
+        `;
     }
+    
     showMainMenu();
 </script>
 </body>
