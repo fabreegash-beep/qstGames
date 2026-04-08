@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>❓ اسأل وتربح | النسخة المطورة</title>
+    <title>🎙️ اسأل وتربح | صوت + دور تلقائي 🎙️</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -41,29 +41,37 @@
         button:hover { transform: translateY(-2px); filter: brightness(1.1); }
         .btn-green { background: #27ae60; } .btn-red { background: #c0392b; } .btn-orange { background: #e67e22; }
         .btn-cyan { background: #2980b9; } .btn-yes { background: #2ecc71; } .btn-no { background: #e74c3c; }
-        .players { display: flex; gap: 20px; margin: 20px 0; }
+        .btn-purple { background: #8e44ad; } .btn-mic { background: #e84393; }
+        .players { display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
         .player-card { flex: 1; background: white; padding: 24px; border-radius: 32px; text-align: center; color: #1e293b; border: 2px solid transparent; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .player-card.active { border-color: #FFD966; background: #fff9e8; }
         .secret-item { background: #4ECDC4; color: white; padding: 12px; border-radius: 28px; margin-top: 10px; font-weight: bold; }
         .chat-area { background: rgba(0,0,0,0.4); border-radius: 28px; padding: 20px; height: 320px; overflow-y: auto; margin: 15px 0; border: 1px solid rgba(255,255,255,0.2); }
-        .message { margin: 10px 0; padding: 10px 18px; border-radius: 28px; max-width: 80%; word-wrap: break-word; }
+        .message { margin: 10px 0; padding: 10px 18px; border-radius: 28px; max-width: 80%; word-wrap: break-word; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .my-message { background: #4ECDC4; color: white; margin-right: auto; text-align: right; }
         .opponent-message { background: white; color: #1e293b; margin-left: auto; text-align: left; }
         .system-message { background: #FFD966; color: #1e293b; text-align: center; margin: 12px auto; width: 90%; font-weight: bold; border-radius: 28px; padding: 10px; }
-        input { width: 100%; padding: 14px 20px; border-radius: 60px; border: none; outline: none; margin-bottom: 10px; font-size: 1rem; background: white; text-align: right; }
+        .audio-msg { background: rgba(0,0,0,0.2); border-radius: 40px; padding: 8px 16px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .audio-msg:hover { background: rgba(0,0,0,0.4); transform: scale(1.02); }
+        .voice-controls { background: rgba(255,255,255,0.1); border-radius: 60px; padding: 12px; margin-top: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .recording-indicator { width: 14px; height: 14px; background: red; border-radius: 50%; animation: pulse 1s infinite; display: inline-block; margin-left: 8px; }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0.3; transform: scale(1.3); } }
+        input, textarea { width: 100%; padding: 14px 20px; border-radius: 60px; border: none; outline: none; margin-bottom: 10px; font-size: 1rem; background: white; text-align: right; }
         .topic-selector { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .punishment-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .punishment-content { background: white; color: #1e293b; padding: 32px; border-radius: 48px; text-align: center; max-width: 450px; width: 90%; }
         .note-input { border: 2px solid #4ECDC4; background: #f0fdfa; margin-top: 5px; }
+        .flex-row { display: flex; gap: 10px; align-items: center; }
+        .voice-badge { font-size: 12px; background: #e84393; border-radius: 20px; padding: 2px 8px; margin-right: 8px; }
     </style>
 </head>
 <body>
 
 <div class="game-container" id="app">
-    <h1>❓ اسأل وتربح | أرقام فقط ❓</h1>
+    <h1>🎙️ اسأل وتربح | صوت + دور تلقائي 🎙️</h1>
     <div id="mainContent">
         <div style="text-align: center; padding: 50px;">
-            <button onclick="createRoom()" class="btn-green" style="font-size: 1.2rem; padding: 15px 30px;">🆕 إنشاء غرفة</button>
+            <button onclick="createRoom()" class="btn-green" style="font-size: 1.2rem; padding: 15px 30px;">🆕 إنشاء غرف)</button>
             <button onclick="joinRoom()" class="btn-orange" style="font-size: 1.2rem; padding: 15px 30px;">🔗 انضمام للعبة</button>
         </div>
     </div>
@@ -219,15 +227,19 @@
     };
 
     let currentRoomId = null, currentPlayer = null, roomListener = null;
+    // Voice recording variables
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
 
     function createRoom() {
-        // إنشاء غرفة بأرقام فقط (6 أرقام)
-        const roomId = Math.floor(100000 + Math.random() * 900000).toString();
+        const roomId = Math.floor(1000 + Math.random() * 9000).toString();
         currentRoomId = roomId; currentPlayer = 'host';
         database.ref('rooms/' + roomId).set({
             host: { joined: true, secretItem: null },
             guest: { joined: false, secretItem: null },
-            phase: 'waiting', turn: 'host', messages: []
+            phase: 'waiting', turn: 'host', messages: [],
+            waitingForAnswer: false, currentQuestion: null
         }).then(() => listenToRoom(roomId));
     }
 
@@ -257,23 +269,113 @@
         database.ref('rooms/' + currentRoomId).update({
             topic: topicKey, phase: 'playing',
             'host/secretItem': hItem, 'guest/secretItem': gItem,
-            messages: [{ from: 'system', text: `🎯 الموضوع: ${TOPICS[topicKey].name}` }]
+            messages: [{ from: 'system', text: `🎯 الموضوع: ${TOPICS[topicKey].name}` }],
+            waitingForAnswer: false,
+            currentQuestion: null,
+            turn: 'host'  // host يبدأ أولاً
         });
     }
 
+    // إرسال سؤال نصي مع إنهاء الدور
     function sendQuestion() {
         const q = document.getElementById('questionInput').value;
         if (!q) return;
+        
         database.ref('rooms/' + currentRoomId).once('value', snap => {
             const room = snap.val();
+            const newMessages = [...(room.messages || []), { from: currentPlayer, text: `❓ ${q}` }];
+            // بعد إرسال السؤال، ننتقل إلى مرحلة انتظار الإجابة، ويصبح دور الخصم للإجابة
             database.ref('rooms/' + currentRoomId).update({
-                messages: [...(room.messages || []), { from: currentPlayer, text: `❓ ${q}` }],
-                waitingForAnswer: true, currentQuestion: q,
-                turn: currentPlayer === 'host' ? 'guest' : 'host'
+                messages: newMessages,
+                waitingForAnswer: true,
+                currentQuestion: q,
+                turn: currentPlayer === 'host' ? 'guest' : 'host'  // نقل الدور إلى الخصم ليُجيب
             });
         });
+        document.getElementById('questionInput').value = '';
+        playClick();
     }
 
+    // --- Voice Recording: بعد انتهاء التسجيل، تُرسل كرسالة صوتية وتُنقل الدور تلقائياً مثل السؤال الكتابي ---
+    async function startVoiceRecording() {
+        if (isRecording) return;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64Audio = reader.result;
+                    // إرسال الرسالة الصوتية وإنهاء الدور تماماً مثل السؤال النصي
+                    database.ref('rooms/' + currentRoomId).once('value', snap => {
+                        const room = snap.val();
+                        if (!room) return;
+                        // إنشاء رسالة صوتية مع نوع voice
+                        const voiceMsg = { 
+                            from: currentPlayer, 
+                            type: 'voice', 
+                            audioData: base64Audio,
+                            timestamp: Date.now()
+                        };
+                        const newMessages = [...(room.messages || []), voiceMsg];
+                        // تحويل الحالة: نضع waitingForAnswer=true ونخزن سؤال افتراضي (رسالة صوتية) وننقل الدور للخصم للإجابة
+                        database.ref('rooms/' + currentRoomId).update({
+                            messages: newMessages,
+                            waitingForAnswer: true,
+                            currentQuestion: "📢 [رسالة صوتية] الرجاء الاستماع ثم الإجابة بنعم/لا",
+                            turn: currentPlayer === 'host' ? 'guest' : 'host'
+                        }).then(() => {
+                            // تنظيف مؤشر التسجيل
+                            const btn = document.getElementById('voiceRecBtn');
+                            if (btn) btn.innerText = '🎙️ سؤال صوتي';
+                        });
+                    });
+                };
+                stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+                playClick();
+            };
+            mediaRecorder.start();
+            isRecording = true;
+            const btn = document.getElementById('voiceRecBtn');
+            if (btn) btn.innerText = '⏺️ جاري التسجيل ... اضغط للإيقاف والإرسال';
+        } catch(err) {
+            alert("لابد من السماح بالميكروفون لإرسال رسائل صوتية");
+            console.error(err);
+        }
+    }
+
+    function stopVoiceRecordingAndSend() {
+        if (mediaRecorder && isRecording && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
+    }
+
+    function toggleVoiceRecording() {
+        if (!isRecording) {
+            startVoiceRecording();
+        } else {
+            stopVoiceRecordingAndSend();
+        }
+    }
+
+    // دالة تشغيل الصوت للخصم (تظهر في واجهة الخصم)
+    function playAudioMessage(base64Data) {
+        try {
+            const audio = new Audio(base64Data);
+            audio.play().catch(e => {
+                console.log("Auto-play prevented, user must interact");
+                alert("لتشغيل الصوت اضغط على الزر مرة أخرى (سياسة المتصفح)");
+            });
+            playClick();
+        } catch(e) { console.error(e); }
+    }
+
+    // إجابة الخصم بنعم/لا بعد سماع السؤال (نصي أو صوتي)
     function sendAnswerWithNote(answer) {
         const note = document.getElementById('answerNote').value.trim();
         const baseAnswer = answer === 'yes' ? '✅ نعم' : '❌ لا';
@@ -281,14 +383,24 @@
 
         database.ref('rooms/' + currentRoomId).once('value', snap => {
             const room = snap.val();
+            const newMessages = [...(room.messages || []), { from: currentPlayer, text: finalMsg }];
+            // بعد الإجابة، نزيل حالة انتظار الإجابة، ونعيد الدور إلى نفس اللاعب (الذي سأل) ليتمكن من طرح سؤال جديد أو تخمين
+            // لكن حسب المنطق: من أجاب يصبح دوره هو طرح السؤال التالي؟ في اللعبة الأصلية: بعد الإجابة يعود الدور للسائل.
+            // ولكن الأفضل أن من أجاب يُنهي دوره ويعود الدور لمن سأل. لكن في تصميمك الأصلي: turn = currentPlayer بعد الإجابة.
+            // سأحافظ على المنطق: بعد الإجابة، يصبح الدور لمن أرسل السؤال (أي الخصم السابق). لكن الأسهل: نعطي الدور لمن قام بالإجابة (لأنه الآن دوره يسأل أو يخمن).
+            // حسب منطق ألعاب التخمين: بعد الإجابة، السائل يستمر في الأسئلة. لكن هنا لتبسيط: بعد الإجابة، يصبح الدور للشخص الذي أجاب (ليتمكن من طرح سؤال جديد).
+            // لكن تطبيقنا: turn كان قد انتقل إلى الخصم للإجابة. بعد الإجابة يجب أن يعود الدور إلى السائل الأصلي؟ لا، الأفضل أن الخصم بعد إجابته يصبح دوره هو طرح سؤال أو تخمين. 
+            // سأجعل turn = currentPlayer (الذي أجاب) حتى يتمكن من طرح سؤال جديد. هذا متوافق مع اللعبة التفاعلية.
             database.ref('rooms/' + currentRoomId).update({
-                messages: [...(room.messages || []), { from: currentPlayer, text: finalMsg }],
-                waitingForAnswer: false, currentQuestion: null, turn: currentPlayer
+                messages: newMessages,
+                waitingForAnswer: false,
+                currentQuestion: null,
+                turn: currentPlayer   // من أجاب يصبح دوره الآن (يطرح سؤالاً أو يخمن)
             });
         });
+        document.getElementById('answerNote').value = '';
     }
 
-    // تعديل وظيفة التخمين لتصبح مرئية وتنقل الدور
     function makeGuess() {
         const g = document.getElementById('guessInput').value.trim();
         if(!g) return;
@@ -296,8 +408,6 @@
         database.ref('rooms/' + currentRoomId).once('value', snap => {
             const room = snap.val();
             const opponentSecret = currentPlayer === 'host' ? room.guest.secretItem : room.host.secretItem;
-            
-            // إضافة التخمين كرسالة في الدردشة ليراها الخصم
             const guessMsg = { from: currentPlayer, text: `🤔 تخمين: ${g}` };
             const newMessages = [...(room.messages || []), guessMsg];
 
@@ -306,23 +416,30 @@
                 database.ref('rooms/' + currentRoomId).update({ 
                     messages: newMessages,
                     phase: 'finished', 
-                    winner: currentPlayer 
+                    winner: currentPlayer,
+                    waitingForAnswer: false
                 });
             } else {
                 playLose();
                 alert("تخمين خاطئ! سينتقل الدور للخصم.");
-                // تحديث الرسائل ونقل الدور للخصم
+                // نقل الدور إلى الخصم بعد تخمين خاطئ
                 database.ref('rooms/' + currentRoomId).update({
                     messages: newMessages,
-                    turn: currentPlayer === 'host' ? 'guest' : 'host'
+                    turn: currentPlayer === 'host' ? 'guest' : 'host',
+                    waitingForAnswer: false
                 });
             }
         });
+        document.getElementById('guessInput').value = '';
     }
 
     function renderGame(room) {
         const isHost = currentPlayer === 'host';
         const myTurn = (isHost && room.turn === 'host') || (!isHost && room.turn === 'guest');
+        const mustAnswer = (room.waitingForAnswer === true);
+        const isAnsweringTurn = (myTurn && mustAnswer);
+        const isAskingTurn = (myTurn && !mustAnswer);
+        
         let html = `<div class="room-section">رقم الغرفة: <span class="room-code">${currentRoomId}</span></div>`;
 
         if (room.phase === 'waiting') {
@@ -339,32 +456,55 @@
             const mySecret = isHost ? room.host.secretItem : room.guest.secretItem;
             html += `
                 <div class="players">
-                    <div class="player-card ${room.turn === 'host' ? 'active' : ''}">المضيف ${isHost ? `<div class="secret-item">${mySecret}</div>` : ''}</div>
-                    <div class="player-card ${room.turn === 'guest' ? 'active' : ''}">الضيف ${!isHost ? `<div class="secret-item">${mySecret}</div>` : ''}</div>
+                    <div class="player-card ${room.turn === 'host' ? 'active' : ''}">المضيف ${isHost ? `<div class="secret-item">🔐 ${mySecret}</div>` : ''}</div>
+                    <div class="player-card ${room.turn === 'guest' ? 'active' : ''}">الضيف ${!isHost ? `<div class="secret-item">🔐 ${mySecret}</div>` : ''}</div>
                 </div>
                 <div class="chat-area" id="chatWindow">
-                    ${(room.messages || []).map(m => `<div class="message ${m.from === currentPlayer ? 'my-message' : (m.from === 'system' ? 'system-message' : 'opponent-message')}">${m.text}</div>`).join('')}
+                    ${(room.messages || []).map(m => {
+                        if (m.type === 'voice') {
+                            const isMyMsg = m.from === currentPlayer;
+                            // تجهيز معرف فريد للتشغيل
+                            const audioDataForPlay = m.audioData.replace(/'/g, "\\'");
+                            return `<div class="message ${isMyMsg ? 'my-message' : 'opponent-message'}">
+                                        <div class="audio-msg" onclick="playAudioMessage('${m.audioData}')">
+                                            🎙️ رسالة صوتية <span style="font-size:12px;">▶️ اضغط للاستماع</span>
+                                        </div>
+                                        <div style="font-size:11px; opacity:0.7; margin-right:10px;">من: ${m.from === 'host' ? 'المضيف' : 'الضيف'}</div>
+                                    </div>`;
+                        } else {
+                            const cls = m.from === currentPlayer ? 'my-message' : (m.from === 'system' ? 'system-message' : 'opponent-message');
+                            return `<div class="message ${cls}">${m.text}</div>`;
+                        }
+                    }).join('')}
                 </div>
             `;
 
-            if (myTurn && room.waitingForAnswer) {
+            // حالة: يجب على اللاعب الإجابة (لأن هناك سؤالاً منتظراً)
+            if (isAnsweringTurn) {
                 html += `
-                    <div class="system-message">السؤال: ${room.currentQuestion}</div>
+                    <div class="system-message">📢 سؤال الخصم: ${room.currentQuestion || "يرجى الاستماع للرسالة الصوتية أعلاه ثم الإجابة"}</div>
                     <input type="text" id="answerNote" class="note-input" placeholder="اكتب ملاحظة (اختياري)...">
                     <div style="display:flex; gap:10px;">
-                        <button class="btn-yes" style="flex:1" onclick="sendAnswerWithNote('yes')">نعم</button>
-                        <button class="btn-no" style="flex:1" onclick="sendAnswerWithNote('no')">لا</button>
+                        <button class="btn-yes" style="flex:1" onclick="sendAnswerWithNote('yes')">نعم ✅</button>
+                        <button class="btn-no" style="flex:1" onclick="sendAnswerWithNote('no')">لا ❌</button>
                     </div>`;
-            } else if (myTurn) {
+            }
+            // حالة: دور اللاعب لطرح سؤال أو تخمين (لا يوجد سؤال معلق)
+            else if (isAskingTurn) {
                 html += `
-                    <input type="text" id="questionInput" placeholder="اكتب سؤالك للخصم...">
-                    <button class="btn-cyan" onclick="sendQuestion()" style="width:100%">إرسال السؤال</button>
+                    <div class="voice-controls">
+                        <button id="voiceRecBtn" class="btn-mic" style="flex:1" onclick="toggleVoiceRecording()">🎙️ سؤال صوتي (ينهي دورك)</button>
+                        <span style="font-size:12px;">اضغط للتسجيل، ثم اضغط مرة أخرى للإرسال التلقائي</span>
+                    </div>
+                    <textarea id="questionInput" rows="2" placeholder="اكتب سؤالك للخصم... (بعد الإرسال ينتهي دورك)"></textarea>
+                    <button class="btn-cyan" onclick="sendQuestion()" style="width:100%">📨 إرسال السؤال (نصي) + إنهاء دوري</button>
                     <hr style="margin:15px 0; opacity:0.2">
-                    <input type="text" id="guessInput" placeholder="خمن ماهو عنصر الخصم؟">
-                    <button class="btn-orange" onclick="makeGuess()" style="width:100%">🎯 تخمين نهائي ونقل الدور</button>
+                    <input type="text" id="guessInput" placeholder="🔍 خمن ماهو عنصر الخصم (تخمين خاطئ ينهي دورك)؟">
+                    <button class="btn-orange" onclick="makeGuess()" style="width:100%">🎯 تخمين نهائي</button>
                 `;
-            } else {
-                html += `<div class="system-message">⏳ انتظر دور الخصم...</div>`;
+            } 
+            else {
+                html += `<div class="system-message">⏳ ليس دورك. انتظر الخصم يرسل سؤالاً (نصياً أو صوتياً) أو يخمن...</div>`;
             }
         } else if (room.phase === 'finished') {
             html += `<div class="punishment-modal"><div class="punishment-content"><h2>🎉 مبروك الفوز! 🎉</h2><p>الفائز هو: ${room.winner === 'host' ? 'المضيف' : 'الضيف'}</p><button class="btn-green" onclick="location.reload()">لعبة جديدة</button></div></div>`;
@@ -374,6 +514,18 @@
         const chat = document.getElementById('chatWindow');
         if (chat) chat.scrollTop = chat.scrollHeight;
     }
+
+    // Global functions for onclick
+    window.createRoom = createRoom;
+    window.joinRoom = joinRoom;
+    window.selectTopic = selectTopic;
+    window.sendQuestion = sendQuestion;
+    window.sendAnswerWithNote = sendAnswerWithNote;
+    window.makeGuess = makeGuess;
+    window.toggleVoiceRecording = toggleVoiceRecording;
+    window.startVoiceRecording = startVoiceRecording;
+    window.stopVoiceRecordingAndSend = stopVoiceRecordingAndSend;
+    window.playAudioMessage = playAudioMessage;
 </script>
 </body>
 </html>
